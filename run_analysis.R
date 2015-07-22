@@ -130,3 +130,12 @@ readAllData <- function(dataDirectory) {
 
 	allData
 }
+
+##
+## We want to return the features asked for plus the subject and activity
+##
+filterFeatureSet <- function(dataDirectory, featureList=c("mean", "std")) {
+	allData <- readAllData(dataDirectory)
+	features = c(1,2,grep(sprintf("-(%s)\\(", paste(featureList, collapse="|")), names(all)))
+	allData[,features]
+}
