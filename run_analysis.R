@@ -1,3 +1,5 @@
+
+
 ## 1. Merges the training and the test sets to create one data set.
 ## 2. Extracts only the measurements on the mean and standard deviation for each measurement.
 ## 3. Uses descriptive activity names to name the activities in the data set
@@ -47,4 +49,84 @@ fetchDataFile <- function(targetURL = targetFilename, targetZipFilename = expect
 	dataDirectoryBase
 }
 
+##
+## Looking for three files here, subject_type.txt, X_type.txt, y_type.txt. Read the files and
+## combine them for a complete view. Fix the activities column with a factor and fix the feature
+## column names with the proper labels instead of the default.
+##
+readData <- function(dataDirectory, dataType) {
+	subjectFilename <- file.path(dataDirectory, dataType, sprintf("subject_%s.txt", dataType))
+	XFilename <- file.path(dataDirectory, dataType, sprintf("X_%s.txt", dataType))
+	yFilename <- file.path(dataDirectory, dataType, sprintf("y_%s.txt", dataType))
 
+	if(!file.exists(subjectFilename))
+	{
+		stop("There is no subject data in the given data directory")
+	}
+	if(!file.exists(XFilename))
+	{
+		stop("There is no sensor (X) data in the given data directory")
+	}
+	if(!file.exists(yFilename))
+	{
+		stop("There is no activity (y) data in the given data directory")
+	}
+
+	activityLabels = getActivityLabels(dataDirectory)
+	columnNames <- c("subject", "activity", getMeasurementLabels(dataDirectory))
+
+	subjectData	<- read.table(subjectFilename)
+	XData	<- read.table(XFilename)
+	yData	<- read.table(yFilename)
+	data <- cbind(subjectData, activityLabels[yData$V1], XData)
+
+	colnames(data) <- columnNames
+
+	data
+}
+
+##
+## Read the activity labels out of the appropriate source file and create a factor with the contents
+##
+getActivityLabels <- function(dataDirectory) {
+	activityLabelsFilename <- file.path(dataDirectory, "activity_labels.txt")
+
+	if(!file.exists(activityLabelsFilename))
+	{
+		stop("There is no activity label data in the given data directory")
+	}
+
+	labelData <- read.table(activityLabelsFilename)
+	factor(labelData$V1, labels=labelData$V2)
+}
+
+##
+## Read the measurement labels out of the appropriate source file and create a list with the contents
+##
+getMeasurementLabels <- function(dataDirectory) {
+	measurementLabelsFilename <- file.path(dataDirectory, "features.txt")
+
+	if(!file.exists(measurementLabelsFilename))
+	{
+		stop("There is no feature label data in the given data directory")
+	}
+
+	labelData <- read.table(measurementLabelsFilename)
+	labels <- as.character(labelData$V2)
+	#labels <- gsub("\\(", "", labels)
+	#labels <- gsub("\\)", "", labels)
+	#labels <- gsub(",", "", labels)
+	#labels <- gsub("^t", "", labels)
+	labels
+}
+
+##
+##	Simply reads both the test and training data and merges them together into one data.frame
+##
+readAllData <- function(dataDirectory) {
+	testData <- readData(dataDirectory, "test")
+	trainData <- readData(dataDirectory, "train")
+	allData <- rbind(testData, trainData)
+
+	allData
+}
