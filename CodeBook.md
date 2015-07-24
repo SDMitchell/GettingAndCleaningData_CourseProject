@@ -66,10 +66,21 @@ Preprocessing | Features are normalized and bounded within [-1,1]
 ### Feature Name Taxonomy
 All feature names are composed of four required portions followed by an optional portion. This naming scheme allows the data value to be interpreted without consulting the external data dictionary. 
 
+Part | Options | Description
+-------- | -------- | --------
+Domain|Time or Freq|Specifies if the original feature was a time-domain signal or was the result of an FFT
+Placement|Body or Gravity|denotes if the measurement was originally the body portion of the acceleration or the gravity portion
+Type|Acc, Gyro, Body, Jerk, Mag|Acc = accelerometer, Gyro = gyroscope, Body = ?, Jerk = first derivative of acceleration signal was taken, Mag = magnitude using Euclidean norm
+Algorithm|MeanOfMean or MeanOfStd|Specifies if the feature is the mean of an original feature which was a mean or std
+Axes|X, Y, Z or factor levels or <empty>|The axis along which a measurement was carried out, or the ordered levels of a factor as text
+
 **A note on units** - *I originally thought that there would be a unit to this data set, but there is no indication one way or the other as to HOW the data was scaled/normalized. Most methods would leave the data unitless, but if a variance-to-mean ratio was used this would not be true. Since I could find no indication contrary to this, I'll play the odds and say that it wasn't done this way.* 
   
 *I also have no idea where an FFT with non-complex values came from, but I'm just going with was given. Maybe also a normalization technique of which I am unaware (I'm sure there are many, to say the least).*  
-
+  
+    
+(Please note that the following table likely has a horizontal scrollbar when viewed on Github)  
+  
 Name | Class | Units | Domain | Placement | Type | Algorithm | Axes
 -------- | -------- | -------- | -------- | -------- | -------- | -------- | --------
 subject|integer|None|N/A|N/A|N/A|N/A|N/A
