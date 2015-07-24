@@ -7,13 +7,15 @@
 ## 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
 
 library(tools)
+library(reshape2)
 
 dataDirectoryBase <- "UCI HAR Dataset"
 targetFilename <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
 dataDescription <- "http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones"
 expectedZipFilename <- "getdata_projectfiles_UCI HAR Dataset.zip"
+defaultOutputFilename <- "run_analysis.txt"
 
-##
+## fetchDataFile
 ## A function to fetch the input data file if it does not currently exist locally.
 ## This function will download the zip file and write its MD5 sum to disk (with a ".MD5" extension). It
 ## will proceed to unpack the zip file. On error an exception is thrown; on success the extracted directory
@@ -49,7 +51,7 @@ fetchDataFile <- function(targetURL = targetFilename, targetZipFilename = expect
 	dataDirectoryBase
 }
 
-##
+## readData
 ## Looking for three files here, subject_type.txt, X_type.txt, y_type.txt. Read the files and
 ## combine them for a complete view. Fix the activities column with a factor and fix the feature
 ## column names with the proper labels instead of the default.
@@ -85,7 +87,7 @@ readData <- function(dataDirectory, dataType) {
 	data
 }
 
-##
+## getActivityLabels
 ## Read the activity labels out of the appropriate source file and create a factor with the contents
 ##
 getActivityLabels <- function(dataDirectory) {
@@ -100,7 +102,7 @@ getActivityLabels <- function(dataDirectory) {
 	factor(labelData$V1, labels=labelData$V2)
 }
 
-##
+## getMeasurementLabels
 ## Read the measurement labels out of the appropriate source file and create a list with the contents
 ##
 getMeasurementLabels <- function(dataDirectory) {
@@ -113,14 +115,14 @@ getMeasurementLabels <- function(dataDirectory) {
 
 	labelData <- read.table(measurementLabelsFilename)
 	labels <- as.character(labelData$V2)
-	#labels <- gsub("\\(", "", labels)
+	#labels <- gsub("(", "", labels)
 	#labels <- gsub("\\)", "", labels)
 	#labels <- gsub(",", "", labels)
 	#labels <- gsub("^t", "", labels)
 	labels
 }
 
-##
+## readAllData
 ## Simply reads both the test and training data and merges them together into one data.frame
 ##
 readAllData <- function(dataDirectory) {
@@ -131,7 +133,7 @@ readAllData <- function(dataDirectory) {
 	allData
 }
 
-##
+## filterFeatureSet
 ## We want to return the features asked for plus the subject and activity. This can be run on an existing
 ## data set or an existing data directory. The feature list is technically a list of regular expressions, but you
 ## could likely cause some issues if you tried to get too fancy with it.
@@ -150,8 +152,7 @@ filterFeatureSet <- function(dataDirectory = NULL, dataset = NULL, featureList=c
 	allData[,features]
 }
 
-
-##
+## createFinalDataSet
 ## This is where we create the final tidy data set, which is a second, independent tidy data set
 ## with the average of each variable for each activity and each subject.
 ##
@@ -160,10 +161,23 @@ createFinalDataSet <- function(dataDirectory = NULL, dataset = NULL) {
 	filteredData <- filterFeatureSet(dataDirectory, dataset, c("mean", "std"))
 
 	# Melt the data set into long form using the subject and activity as id columns
-	melted <- melt(filt2, id.vars=c(1,2), factorsAsStrings=FALSE)
+	molten <- melt(filteredData, id.vars=c(1,2), factorsAsStrings=FALSE)
 
 	# Cast back to the wide form using mean() as the aggregated function
-	final <- dcast(melted, subject+activity~variable, mean)
+	final <- dcast(molten, subject+activity~variable, mean)
 
+	# Return the final data set
 	final
+}
+
+## run_analysis
+## This is the driver function for generating the assignment results. When this code file is source'd
+## running this function will generate the tidy data set file, downloading and filtering the data
+## with the default values as specified in the assignment
+##
+run_analysis <- function(outputFilename=defaultOutputFilename) {
+	# Go to the target URL and fetch the data set if it is needed
+	fetchDataFile(targetFilename)
+	data <- createFinalDataSet(dataDirectory=dataDirectoryBase)
+	write.table(data, outputFilename, row.name=FALSE)
 }
