@@ -1,4 +1,6 @@
-# Coursera Getting and Cleaning Data Course README
+# Coursera "Getting and Cleaning Data" Course Project README  
+
+This a set of simple instructions to use the one and only script that fulfils the instructions in the project rubric. The [codebook](https://github.com/SDMitchell/GettingAndCleaningData_CourseProject/blob/master/CodeBook.md) explains what steps were taken to clean and tidy the data, as well as the variables in the resulting (final) data set.  
 
 
 ##tl;dr Instructions

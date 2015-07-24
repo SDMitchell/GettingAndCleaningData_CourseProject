@@ -115,10 +115,8 @@ getMeasurementLabels <- function(dataDirectory) {
 
 	labelData <- read.table(measurementLabelsFilename)
 	labels <- as.character(labelData$V2)
-	#labels <- gsub("(", "", labels)
-	#labels <- gsub("\\)", "", labels)
-	#labels <- gsub(",", "", labels)
-	#labels <- gsub("^t", "", labels)
+	labels <- gsub("^t", "Time", labels)
+	labels <- gsub("^f", "Freq", labels)
 	labels
 }
 
@@ -166,6 +164,11 @@ createFinalDataSet <- function(dataDirectory = NULL, dataset = NULL) {
 	# Cast back to the wide form using mean() as the aggregated function
 	final <- dcast(molten, subject+activity~variable, mean)
 
+	# We should likely fix the labels up one more time, seeing as the features no longer resemble
+	# what we read in, but are actually the mean() for the stat we read in. So let's do a replace
+	# of "func()" with "MeanOfFunc"
+	colnames(final) <- gsub("mean\\(\\)", "MeanOfMean", colnames(final))
+	colnames(final) <- gsub("std\\(\\)", "MeanOfStd", colnames(final))
 	# Return the final data set
 	final
 }
