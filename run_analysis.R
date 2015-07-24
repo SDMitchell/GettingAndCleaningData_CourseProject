@@ -121,7 +121,7 @@ getMeasurementLabels <- function(dataDirectory) {
 }
 
 ##
-##	Simply reads both the test and training data and merges them together into one data.frame
+## Simply reads both the test and training data and merges them together into one data.frame
 ##
 readAllData <- function(dataDirectory) {
 	testData <- readData(dataDirectory, "test")
@@ -132,10 +132,38 @@ readAllData <- function(dataDirectory) {
 }
 
 ##
-## We want to return the features asked for plus the subject and activity
+## We want to return the features asked for plus the subject and activity. This can be run on an existing
+## data set or an existing data directory. The feature list is technically a list of regular expressions, but you
+## could likely cause some issues if you tried to get too fancy with it.
 ##
-filterFeatureSet <- function(dataDirectory, featureList=c("mean", "std")) {
-	allData <- readAllData(dataDirectory)
-	features = c(1,2,grep(sprintf("-(%s)\\(", paste(featureList, collapse="|")), names(all)))
+filterFeatureSet <- function(dataDirectory = NULL, dataset = NULL, featureList=c("mean", "std")) {
+	if(is.null(dataDirectory) && is.null(dataset))
+		stop("You must specify either a dataset or a dataDirectory containing the appropriate data")
+
+	if(is.null(dataset))
+		allData <- readAllData(dataDirectory)
+	else
+		allData <- dataset
+
+	# Build the regex out of the feature list, since all of the features have the same form
+	features = c(1,2,grep(sprintf("-(%s)\\(", paste(featureList, collapse="|")), names(allData)))
 	allData[,features]
+}
+
+
+##
+## This is where we create the final tidy data set, which is a second, independent tidy data set
+## with the average of each variable for each activity and each subject.
+##
+createFinalDataSet <- function(dataDirectory = NULL, dataset = NULL) {
+	# Create our data set of just the variables the assignment asked for
+	filteredData <- filterFeatureSet(dataDirectory, dataset, c("mean", "std"))
+
+	# Melt the data set into long form using the subject and activity as id columns
+	melted <- melt(filt2, id.vars=c(1,2), factorsAsStrings=FALSE)
+
+	# Cast back to the wide form using mean() as the aggregated function
+	final <- dcast(melted, subject+activity~variable, mean)
+
+	final
 }
