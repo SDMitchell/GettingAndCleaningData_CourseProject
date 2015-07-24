@@ -117,6 +117,8 @@ getMeasurementLabels <- function(dataDirectory) {
 	labels <- as.character(labelData$V2)
 	labels <- gsub("^t", "Time", labels)
 	labels <- gsub("^f", "Freq", labels)
+	labels <- gsub("-", ".", labels)
+
 	labels
 }
 
@@ -146,7 +148,7 @@ filterFeatureSet <- function(dataDirectory = NULL, dataset = NULL, featureList=c
 		allData <- dataset
 
 	# Build the regex out of the feature list, since all of the features have the same form
-	features = c(1,2,grep(sprintf("-(%s)\\(", paste(featureList, collapse="|")), names(allData)))
+	features = c(1,2,grep(sprintf("\\.(%s)\\(", paste(featureList, collapse="|")), names(allData)))
 	allData[,features]
 }
 
@@ -166,7 +168,7 @@ createFinalDataSet <- function(dataDirectory = NULL, dataset = NULL) {
 
 	# We should likely fix the labels up one more time, seeing as the features no longer resemble
 	# what we read in, but are actually the mean() for the stat we read in. So let's do a replace
-	# of "func()" with "MeanOfFunc"
+	# of "func()" with "MeanOfFunc".
 	colnames(final) <- gsub("mean\\(\\)", "MeanOfMean", colnames(final))
 	colnames(final) <- gsub("std\\(\\)", "MeanOfStd", colnames(final))
 	# Return the final data set
